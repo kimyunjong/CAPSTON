@@ -3,7 +3,7 @@ package com.dropboxapi;
 /**
  * Created by Joel on 2016-01-06.
  */
-public class Stopwatch {
+public class StopwatchEntire {
     long start;
     long end;
 

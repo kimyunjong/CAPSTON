@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     android:orientation="vertical"
-    tools:context="com.dropboxapi.MainActivity">
+    tools:context="com.dropboxapi.MainActivity"
+    android:id="@+id/parentLayout">
 
    <Button
        android:layout_width="wrap_content"
@@ -19,13 +20,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/btn2"
-        android:text="UpLOAD FROM SELECTED APP"/>
+        android:text="UnZip하자"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/btn3"
-        android:text="UPLOAD FROM FILEMANAGER"/>
+        android:text="테스트페이지"/>
 
     <Button
         android:layout_width="wrap_content"

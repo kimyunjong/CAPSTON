@@ -12,8 +12,10 @@ import android.provider.MediaStore;
 
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -30,13 +32,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
 
 public class MainActivity extends Activity  implements AbsListView.OnScrollListener{
     private Handler mHandler;
-
     public  static Button button1;
     private Button mChooserButton;
     private DbxChooser mChooser;
@@ -54,8 +57,9 @@ public class MainActivity extends Activity  implements AbsListView.OnScrollListe
     public String downFileName;
     public  static Button button4;
     public static String path= Environment.getExternalStorageDirectory().getAbsolutePath()+"/AAA_DB/";
-
+    public static CompressionUtil cu = new CompressionUtil();
     public static File Dir=new File(path);
+    LinearLayout parentView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +70,18 @@ public class MainActivity extends Activity  implements AbsListView.OnScrollListe
         button4=(Button)findViewById(R.id.btn4);
         mChooser = new DbxChooser(APP_KEY);
         mHandler = new Handler();
+        cu = new CompressionUtil();
+
+        parentView=(LinearLayout)findViewById(R.id.parentLayout);
+         parentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                GlobalVar.screen_width=parentView.getWidth();
+                GlobalVar.screen_height=parentView.getHeight();
+               // System.out.println("제발 알려줘 나에게"+widthIW+" "+heightIW);
+            }
+        });
+
         mChooserButton = (Button) findViewById(R.id.choose);
         mChooserButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,13 +100,21 @@ public class MainActivity extends Activity  implements AbsListView.OnScrollListe
         button2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UploadToDropboxFromSelectedApp("dbtuorial/UploadFileSelectedApp");
+
+                try{
+                    cu.unzip( new File(path+"Pictures.zip"),new File(path+"NewFolder"),"EUC-KR" );
+                }
+                catch (IOException ie)
+                {
+                    Toast.makeText(getApplicationContext(), "There is no File to Unzip, Please check the FileName.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
         button3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UploadToDropboxFromFilemanager("dbtuorial/UploadFileFromfilemanager");
+                Intent intent=new Intent(MainActivity.this,LoadFiles.class);
+                startActivity(intent);
             }
         });
         button4.setOnClickListener(new View.OnClickListener() {
@@ -205,8 +229,9 @@ public class MainActivity extends Activity  implements AbsListView.OnScrollListe
                                 public void run() {
                                     if (index == 1) {
                                         Toast.makeText(getApplicationContext(), "File successfully downloaded.", Toast.LENGTH_SHORT).show();
+
                                     }
-                                    GlobalVar.downloadDone=true;
+                                    GlobalVar.downloadDone = true;
                                 }
                             });
                         } catch (Exception e) {
@@ -358,6 +383,31 @@ public class MainActivity extends Activity  implements AbsListView.OnScrollListe
 
     }
 
+    private String[] getTitleList(String path, String _filetype)
+    {
+        final String filetype=_filetype;
+        try
+        {
+            FilenameFilter fileFilter = new FilenameFilter()  //이부분은 특정 확장자만 가지고 오고 싶을 경우 사용하시면 됩니다.
+            {
+                public boolean accept(File dir, String name)
+                {
+                    return name.endsWith(filetype); //이 부분에 사용하고 싶은 확장자를 넣으시면 됩니다.
+                } //end accept
+            };
+            File file = new File(path);
+            File[] files = file.listFiles(fileFilter);//위에 만들어 두신 필터를 넣으세요. 만약 필요치 않으시면 fileFilter를 지우세요.
+            String [] titleList = new String [files.length]; //파일이 있는 만큼 어레이 생성했구요
+            for(int i = 0;i < files.length;i++)
+            {
+                titleList[i] = files[i].getName();	//루프로 돌면서 어레이에 하나씩 집어 넣습니다.
+            }//end for
+            return titleList;
+        } catch( Exception e )
+        {
+            return null;
+        }//end catch()
+    }//end getTitleList
     public class DownloadThread extends Thread
     {
         private boolean startThread=false;
